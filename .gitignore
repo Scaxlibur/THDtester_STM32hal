@@ -6,3 +6,8 @@ cmake/
 .mxproject
 ./startup_stm32f407xx.s
 ./STM32F407XX_FLASH.ld
+./build.ninja
+cmake_install.cmake
+CMakeCache.txt
+CMakePresets.json
+compile_commands.json
