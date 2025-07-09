@@ -1,14 +1,4 @@
-#include "stm32f4xx.h"
-#include <stdio.h>
 #include "ad7606.h"
-#include "gpio.h"
-#include "tim.h"
-#include "usart.h"
-#include "stdio.h"
-#include "string.h"
-#include "arm_math.h"
-// #include "arm_const_structs.h"
-// #include "arm_common_tables.h"
 
 FIFO_t g_tAD;            //定义一个数据交换缓冲区
 
@@ -33,6 +23,7 @@ float32_t Mid_Filter_Freq_Buffer[Filter_average_num];    //频率平均滤波时
 /*定义fft运算中的参数*/
 uint32_t fftSize = 64;                          //FFT计算点数
 uint32_t doBitReverse = 1;                      //按位取反
+uint8_t ifftFlag = 0;                        //FFT变换标志，0表示FFT变换，1表示IFFT变换
 
 /*定义计算结果存放*/
 float32_t maxvalue;                             //计算出频域上最大值(包括直流分量)
@@ -152,7 +143,7 @@ void ad7606_StartConv(void)
 void SPI_SendData(uint16_t data)
 {
     uint8_t count=0;
-    AD_SCK_LOW();    //???μ??óDD§
+    AD_SCK_LOW();
     for(count=0;count<16;count++)
     {
         if(data&0x8000)
@@ -161,7 +152,7 @@ void SPI_SendData(uint16_t data)
             AD_MISO_HIGH();
         data<<=1;
         AD_SCK_LOW();
-        AD_CSK_HIGH();        //é?éy??óDD§
+        AD_CSK_HIGH();    
     }
 }
 
@@ -173,10 +164,10 @@ uint16_t SPI_ReceiveData(void)
     uint8_t count=0;
     uint16_t Num=0;
     AD_CSK_HIGH();
-    for(count=0;count<16;count++)//?á3?16??êy?Y
+    for(count=0;count<16;count++)
     {
         Num<<=1;
-        AD_SCK_LOW();    //???μ??óDD§
+        AD_SCK_LOW();   
         if(AD_MISO_IN)Num++;
         AD_CSK_HIGH();
     }
@@ -204,9 +195,10 @@ void ad7606_IRQSrc(void)
 {
     uint8_t i;
     uint16_t usReadValue;
-        static int j;
+        static uint32_t j;
 
-    /* 读取数据
+    /* 
+    读取数据
     示波器监视，CS低电平持续时间 35us
     */
     AD_CS_LOW();
@@ -257,9 +249,9 @@ void ad7606_StartRecord(void)
 {
     //ad7606_Reset();
 
-    ad7606_StartConv();                /* ???ˉ2é?ù￡?±ü?aμú1×éêy?Yè?0μ??êìa */
+    ad7606_StartConv(); 
 
-    g_tAD.usRead = 0;                /* ±?D??ú?a??TIM2???°??0 */
+    g_tAD.usRead = 0; 
     g_tAD.usWrite = 0;
 
     MX_TIM4_Init();         //设置定时器4频率
@@ -300,10 +292,10 @@ int32_t ad7606_get_signal_average_val(int8_t channal,int8_t average_num)
 */
 void ad7606_get_fft_data()
 {
-	int i;
-	printf("%d",i);
+	uint32_t i;
 	for (i=0;i<fftSize;i++)                                                   
 	{
+        printf("%ld",i);
 		InPutBuffer[2*i] = ((float)((short)g_tAD.usBuf[0])/32768/2);              
 		InPutBuffer[2*i+1] = 0;
 		g_tAD.usWrite = 0;
@@ -320,15 +312,15 @@ void ad7606_get_fft_data()
  */
 void fft_get_maxvalue()
 {
-	int k;
+	uint32_t k;
 	
 	if(fft_complete_flag == 1)
 	{
 		arm_cfft_f32(&arm_cfft_sR_f32_len64,MidBuffer,ifftFlag,doBitReverse);      //对输入数组进行FFT变换，变换结果将存放在输入数组中
 	
-	  arm_cmplx_mag_f32(MidBuffer,OutPutBuffer,fftSize);                         //对经过FFT变换的数组进行取模运算，运算结果将存放在OutPutBuffer数组中
+	    arm_cmplx_mag_f32(MidBuffer,OutPutBuffer,fftSize);                         //对经过FFT变换的数组进行取模运算，运算结果将存放在OutPutBuffer数组中
 	
-	  arm_max_f32(OutPutBuffer,fftSize,&maxvalue,&Index);                        //输出数组中频域最大的数值和其所在数组中的位置
+	    arm_max_f32(OutPutBuffer,fftSize,&maxvalue,&Index);                        //输出数组中频域最大的数值和其所在数组中的位置
 
 		for(k=0;k<(fftSize/2-1);k++)
 		{

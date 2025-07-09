@@ -48,14 +48,14 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    ${CMAKE_SOURCE_DIR}/AD7606/AD7606.c
-    ${CMAKE_SOURCE_DIR}/AD7606/Change.c
+    ${CMAKE_SOURCE_DIR}/AD7606/ad7606.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     ${CMAKE_SOURCE_DIR}/AD7606
+    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/DSP/Include
 )
 
 # Add project symbols (macros)

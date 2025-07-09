@@ -110,11 +110,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		int32_t average_val;
-		average_val = ad7606_get_signal_average_val(1,8);//AIN1迭代8次的值
-    printf("average_val_AIN1 = %d mv\n",ad7606_get_signal_average_val(1,8));
-		HAL_Delay(200);//注意延时不要太久		
-		//fft_get_maxvalue();
+		HAL_Delay(200);		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,10 +165,7 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef  *htim)
-{
-  
-	  static unsigned char ledstate = 0;
-	  
+{	  
     if (htim == (&htim4))                    //TIM4中断后读取adc数值
     {
         ad7606_IRQSrc();

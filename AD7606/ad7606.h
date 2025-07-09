@@ -14,25 +14,31 @@
             
 ****************************************************************************
 */
-#ifndef ad7606_ad7606_H
-#define ad7606_ad7606_H
-// #include "sys.h"
+#ifndef _ad7606_H_
+#define _ad7606_H_
+#include "stdint.h"
+#include "string.h"
+#include "stm32f4xx.h"
+#include <stdio.h>
+#include "gpio.h"
+#include "tim.h"
+#include "usart.h"
+#include "stdio.h"
 #include "string.h"
 #include "arm_math.h"
-#include "main.h"
-/*????????��???*/
-#define ENABLE_INT()    __set_PRIMASK(0)    /* ???????��? */
-#define DISABLE_INT()    __set_PRIMASK(1)    /* ???????��? */
+#include "arm_const_structs.h"
+#include "arm_common_tables.h"
 
-/*??????????????????*/
-#define CH_NUM            8   //????8?????
+#define ENABLE_INT()     __set_PRIMASK(0) 
+#define DISABLE_INT()    __set_PRIMASK(1) 
+
+#define CH_NUM           8 
 #define FIFO_SIZE        1*1024*2
 
 #define uchar unsigned char
 #define uint  unsigned int    
 #define ulong  unsigned long int
 
-//?????????
 #define AD_CS_LOW()                         CS_GPIO_Port->BSRR = CS_Pin << 16U
 #define AD_CS_HIGH()                        CS_GPIO_Port->BSRR = CS_Pin
 
@@ -62,8 +68,7 @@
 
 #define AD_MISO_IN                          HAL_GPIO_ReadPin(MISO_GPIO_Port, MISO_Pin)
 
-/*AD????????????*/
-typedef struct FIFO_t
+typedef struct
 {
     uint16_t usRead;
     uint16_t usWrite;
@@ -82,9 +87,8 @@ void ad7606_get_fft_data(void);
 void fft_get_maxvalue(void);
 float32_t filter_fft(void);
 int32_t ad7606_get_signal_average_val(int8_t channal,int8_t average_num);
-uint8_t GetAdcFormFifo(uint16_t *_usReadAdc);
 
 extern FIFO_t  g_tAD;
 
-#endif //ad7606_ad7606_H
+#endif
 
