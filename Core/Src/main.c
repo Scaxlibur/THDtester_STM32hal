@@ -48,7 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-int i;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,7 +110,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		HAL_Delay(200);		
+    printf("%ld mv\n\n", ad7606_get_signal_average_val(1,8));
+    ad7606_get_fft_data();
+    fft_get_maxvalue();
+    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

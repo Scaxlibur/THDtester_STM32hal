@@ -13,7 +13,8 @@ static float32_t    DC_Component;                   //直流分量
 static float32_t InPutBuffer[sample_lenth];       //定义输入数组 InPutBuffer     该数组是外部变量 
 static float32_t MidBuffer[sample_lenth];         //定义中间数组
 static float32_t OutPutBuffer[sample_lenth/2];    //定义输出数组 OutPutBuffer    该数组是一个静态数组
-static float32_t FreqBuffer[(sample_lenth/4)-1];       //定义除了直流分量之外的频域数组
+static float32_t FreqBuffer[(sample_lenth/4)-1];  //定义除了直流分量之外的频域数组
+static float32_t PowerBuffer[sample_lenth/2]; //定义除了直流分量之外的功率谱数组
 
 /*定义滤波中使用的中间数组*/
 #define Filter_average_num 4                             //平均滤波样本数量
@@ -341,7 +342,7 @@ void fft_get_maxvalue()
 		
 		//printf("maxvalue = %f \r\n location = %d  \r\n",maxvalue,Index);
 		
-	  printf("Fmaxvalue = %f \r\n Amplitude = %f  \r\n  DC_Component = %f  \r\n  Virtual_value = %f  \r\n Res = %f  \r\n  ",Freq,Amplitude,DC_Component,Virtual_value,res);
+	  printf("\n频率Fmaxvalue = %f\r\n频率幅度Amplitude = %f\r\n直流分量 DC_Component = %f\r\n有效值Virtual_value = %f\r\nRes = %f\r\n  ",Freq,Amplitude,DC_Component,Virtual_value,res);
 		
 		
 		fft_complete_flag = 0;                                                     //标志位置0，表示转换完成
@@ -371,3 +372,30 @@ float32_t filter_fft()
 	
 	return result;
 }
+
+
+/**
+ * @brief 获得功率谱
+ */
+/*
+void GetPowerMag()
+{
+    signed short lX,lY;
+    float X,Y,Mag;
+    unsigned short i;
+    for(i=0; i<fftSize/2; i++)
+    {
+        lX  = (OutPutBuffer[i] << 16) >> 16;
+        lY  = (OutPutBuffer[i] >> 16);
+        
+        //除以32768再乘65536是为了符合浮点数计算规律
+        X = fftSize * ((float)lX) / 32768;
+        Y = fftSize * ((float)lY) / 32768;
+        Mag = sqrt(X * X + Y * Y) / fftSize;
+        if(i == 0)
+            PowerBuffer[i] = (unsigned long)(Mag * 32768);
+        else
+            PowerBuffer[i] = (unsigned long)(Mag * 65536);
+    }
+}
+*/
