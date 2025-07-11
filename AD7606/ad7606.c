@@ -9,12 +9,13 @@ static float32_t    Amplitude;                      //最大频率的幅值
 static float32_t    DC_Component;                   //直流分量
 
 /*定义使用中的数组大小和采样点数*/
-#define sample_lenth 128                         //采样点数
+#define sample_lenth 1024                         //采样点数
 static float32_t InPutBuffer[sample_lenth];       //定义输入数组 InPutBuffer     该数组是外部变量 
 static float32_t MidBuffer[sample_lenth];         //定义中间数组
 static float32_t OutPutBuffer[sample_lenth/2];    //定义输出数组 OutPutBuffer    该数组是一个静态数组
 static float32_t FreqBuffer[(sample_lenth/4)-1];  //定义除了直流分量之外的频域数组
-static float32_t PowerBuffer[sample_lenth/2]; //定义除了直流分量之外的功率谱数组
+extern int32_t basicInput[256];               //基本输入，用于调试和显示
+// static float32_t PowerBuffer[sample_lenth/2]; //定义除了直流分量之外的功率谱数组
 
 /*定义滤波中使用的中间数组*/
 #define Filter_average_num 4                             //平均滤波样本数量
@@ -22,7 +23,7 @@ float32_t Mid_Filter_Freq_Buffer[Filter_average_num];    //频率平均滤波时
 
 
 /*定义fft运算中的参数*/
-uint32_t fftSize = 64;                          //FFT计算点数
+uint32_t fftSize = 256;                          //FFT计算点数
 uint32_t doBitReverse = 1;                      //按位取反
 uint8_t ifftFlag = 0;                        //FFT变换标志，0表示FFT变换，1表示IFFT变换
 
@@ -124,15 +125,8 @@ void ad7606_SetOS(uint8_t _ucMode)
 void ad7606_StartConv(void)
 {
     /* 上升沿开始转换，低电平至少持续25ns  */
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();    /* 连续执行2次，低电平持续时间大约为50ns */
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
-    AD_CONVST_LOW();
+    AD_CONVST_LOW();    /* 系统时钟为168MHz时低电平持续时间为35.8ns */
+
 
     AD_CONVST_HIGH();
 }
@@ -196,7 +190,7 @@ void ad7606_IRQSrc(void)
 {
     uint8_t i;
     uint16_t usReadValue;
-        static uint32_t j;
+    static uint32_t j;
 
     /* 
     读取数据
@@ -223,6 +217,7 @@ void ad7606_IRQSrc(void)
         {
             InPutBuffer[2*j] = ((float)((short)g_tAD.usBuf[0])/32768/2);         //数据存放在输入数组的偶数位
             InPutBuffer[2*j+1] = 0;                                              //奇数位置零
+            basicInput[j] = 10000*InPutBuffer[2*j];                                    //将采样数据存放在basicInput数组中，用于调试和显示
             g_tAD.usWrite = 0;
             j++;
         }
@@ -273,7 +268,7 @@ void ad7606_StopRecord(void)
  * @param average_num 均值法的迭代次数
  * @retval int_singal_sample_val
  */
-int32_t ad7606_get_signal_average_val(int8_t channal,int8_t average_num)
+int32_t  ad7606_get_signal_average_val(int8_t channal,int8_t average_num)
 {
     int i;
     float val = 0;                                                             //用于累加的中间变量
@@ -317,7 +312,7 @@ void fft_get_maxvalue()
 	
 	if(fft_complete_flag == 1)
 	{
-		arm_cfft_f32(&arm_cfft_sR_f32_len64,MidBuffer,ifftFlag,doBitReverse);      //对输入数组进行FFT变换，变换结果将存放在输入数组中
+		arm_cfft_f32(&arm_cfft_sR_f32_len256,MidBuffer,ifftFlag,doBitReverse);      //对输入数组进行FFT变换，变换结果将存放在输入数组中
 	
 	    arm_cmplx_mag_f32(MidBuffer,OutPutBuffer,fftSize);                         //对经过FFT变换的数组进行取模运算，运算结果将存放在OutPutBuffer数组中
 	
@@ -346,7 +341,12 @@ void fft_get_maxvalue()
 		
 		
 		fft_complete_flag = 0;                                                     //标志位置0，表示转换完成
-		
+		for(uint16_t i = 0; i < sample_lenth/2; i++)
+        {
+            if(OutPutBuffer[i] > 1)
+                // printf("Outputbuffer[%d] = %f\r\n",i,OutPutBuffer[i]);
+                printf("%f\r\n",i,OutPutBuffer[i]);
+        }     
 	} 
 }
 

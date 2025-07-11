@@ -48,6 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+int32_t basicInput[256];
 
 /* USER CODE END PV */
 
@@ -101,18 +102,23 @@ int main(void)
 	正负5V对应转换   (10*(float)((short)g_tAD.usBuf[j])/32768/2)    AD_RANGE_5V()
 	*/
 	ad7606_init ();
-	AD_RANGE_5V();                                        //设置输入电压最大值
-  ad7606_StartRecord();                           		   //采样率为100K，采样率由TIM4决定,采样率应该是被采样信号的2倍以上
-
+	AD_RANGE_5V();                                       //设置输入电压最大值
+  ad7606_StartRecord();          
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    printf("%ld mv\n\n", ad7606_get_signal_average_val(1,8));
-    ad7606_get_fft_data();
-    fft_get_maxvalue();
+    printf("***********/////////////////*******************\n");
+    for(int i =0;i<100;i++)
+    {
+  
+      printf("%ld\n",basicInput[i]);
+
+    }
+    // ad7606_get_fft_data();
+    // fft_get_maxvalue();
     HAL_Delay(1000);
     /* USER CODE END WHILE */
 
